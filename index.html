@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>포카리스트 📸</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 480px;
+      margin: auto;
+      padding: 10px;
+      background-color: #f9f9f9;
+    }
+    h1 { text-align: center; margin-bottom: 20px; }
+    form { display: flex; flex-direction: column; margin-bottom: 20px; }
+    input, button { padding: 10px; margin: 5px 0; font-size: 16px; }
+    button { background-color: #4CAF50; color: white; border: none; border-radius: 5px; }
+    .card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 5px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; margin-right: 10px; }
+    .card-info { flex: 1; }
+    .card button { background-color: #f44336; padding: 5px 10px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>📸 포카리스트</h1>
+  <form id="cardForm">
+    <input type="text" id="idol" placeholder="아이돌 이름" required>
+    <input type="text" id="album" placeholder="앨범명" required>
+    <input type="url" id="photo" placeholder="사진 URL (선택)">
+    <button type="submit">추가하기</button>
+  </form>
+
+  <div id="list"></div>
+
+  <script>
+    const form = document.getElementById('cardForm');
+    const list = document.getElementById('list');
+    let cards = JSON.parse(localStorage.getItem('cards')) || [];
+
+    function render() {
+      list.innerHTML = '';
+      cards.forEach((card, index) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `${card.photo ? `<img src="${card.photo}" alt="">` : ""}
+          <div class="card-info"><b>${card.idol}</b> - ${card.album}</div>
+          <button onclick="removeCard(${index})">삭제</button>`;
+        list.appendChild(div);
+      });
+      localStorage.setItem('cards', JSON.stringify(cards));
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const idol = document.getElementById('idol').value.trim();
+      const album = document.getElementById('album').value.trim();
+      const photo = document.getElementById('photo').value.trim();
+      if (idol && album) {
+        cards.push({ idol, album, photo });
+        form.reset();
+        render();
+      }
+    });
+
+    function removeCard(index) {
+      cards.splice(index, 1);
+      render();
+    }
+
+    render();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => {
+        console.log('Service Worker 등록 완료');
+      });
+    }
+  </script>
+</body>
+</html>
